@@ -82,65 +82,56 @@ class Finder:
                     status_link
                 )
             elif layout == "new":
+                driver.execute_script("arguments[0].scrollIntoView({ block: 'center', inline: 'center'});", post)
+                # try to hover over the time link
+                link = Utilities._Utilities__find_with_multiple_selectors(post, [
+                    'span > a[role="link"]' if isGroup else 'span > a[target="_blank"][role="link"]',
+                    'span > a[attributionsrc][role="link"][href="#"]'
+                ])
+                actions = ActionChains(driver)
+                # scroll to the link
+                scrolling_script = """
+                    const element = arguments[0];
+                    const elementRect = element.getBoundingClientRect();
+                    const absoluteElementTop = elementRect.top + window.pageYOffset;
+                    const middle = absoluteElementTop - (window.innerHeight / 2);
+                    window.scrollTo(0, middle); 
+                """
+                driver.execute_script(scrolling_script, link)
+                Utilities._Utilities__close_force_login_popup(driver)
+                driver.execute_script("arguments[0].style.border='2px solid black'", link);
+                actions.move_to_element(link).perform()
+                Utilities._Utilities__close_force_login_popup(driver)
+                time.sleep(2)
 
+                # actually not  useful to trigger the hover witht he mouse event
+                # should be deleted in the future
+                javaScript = """
+                    var evObj = document.createEvent('MouseEvents');
+                    evObj.initMouseEvent(\"mouseover\",true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                    arguments[0].dispatchEvent(evObj);
+                """
+                driver.execute_script(javaScript, link)
                 try:
-                    # try to scroll to the start of the post
-                    driver.execute_script("arguments[0].scrollIntoView({ block: 'center', inline: 'center'});", post)
-
                     link = post.find_element(
                         By.CSS_SELECTOR,
-                        'span > a[role="link"]' if isGroup else 'span > a[aria-label][role="link"]'
+                        'span > a[role="link"]' if isGroup else 'span > a[href*="/posts/"][role="link"]'
                     )
-
                 except NoSuchElementException:
-                    # try to hover over the time link
-                    link = Utilities._Utilities__find_with_multiple_selectors(post, [
-                        'span > a[role="link"]' if isGroup else 'span > a[target="_blank"][role="link"]',
-                        'span > a[attributionsrc][role="link"][href="#"]'
-                    ])
-                    actions = ActionChains(driver)
-                    # scroll to the link
-                    scrolling_script = """
-                        const element = arguments[0];
-                        const elementRect = element.getBoundingClientRect();
-                        const absoluteElementTop = elementRect.top + window.pageYOffset;
-                        const middle = absoluteElementTop - (window.innerHeight / 2);
-                        window.scrollTo(0, middle); 
-                    """
-                    driver.execute_script(scrolling_script, link)
-                    Utilities._Utilities__close_force_login_popup(driver)
-                    driver.execute_script("arguments[0].style.border='2px solid black'", link);
-                    actions.move_to_element(link).perform()
-                    Utilities._Utilities__close_force_login_popup(driver)
-                    time.sleep(2)
+                    postId = Finder._Finder__find_post_id(post, layout)
+                    if postId is not None:
+                        post_url = "https://www.facebook.com/{}/posts/{}".format(page_or_group_name, postId)
+                        print("constructed post Url ")
+                        print(post_url)
+                        return (postId, post_url, link)
 
-                    # actually not  useful to trigger the hover witht he mouse event
-                    # should be deleted in the future
-                    javaScript = """
-                        var evObj = document.createEvent('MouseEvents');
-                        evObj.initMouseEvent(\"mouseover\",true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                        arguments[0].dispatchEvent(evObj);
-                    """
-                    driver.execute_script(javaScript, link)
-                    try:
-                        link = post.find_element(
-                            By.CSS_SELECTOR,
-                            'span > a[role="link"]' if isGroup else 'span > a[href*="/posts/"][role="link"]'
-                        )
-                    except NoSuchElementException:
-                        postId = Finder._Finder__find_post_id(post, layout)
-                        if postId is not None:
-                            post_url = "https://www.facebook.com/{}/posts/{}".format(page_or_group_name, postId)
-                            print("constructed post Url ")
-                            print(post_url)
-                            return (postId, post_url, link)
                 Utilities._Utilities__close_force_login_popup(driver)
                 if link is not None:
                     status_link = link.get_attribute("href")
                     status = Scraping_utilities._Scraping_utilities__extract_id_from_link(
                         status_link
                     )
-                    if not isGroup and status_link and status: #early exit for non group
+                    if not isGroup and status_link and status:  # early exit for non group
                         return (status, status_link, link)
 
                 links = post.find_elements(By.TAG_NAME, 'a')
