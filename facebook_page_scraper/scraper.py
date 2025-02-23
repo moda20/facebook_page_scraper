@@ -68,7 +68,7 @@ class Facebook_scraper:
         self.__driver = Initializer(
             self.browser, self.proxy, self.headless).init(self.driver_install_config)
 
-    def __handle_popup(self, layout):
+    def __handle_popup(self, layout, close_regular_signup_modal = True):
         # while scrolling, wait for login popup to show, it can be skipped by clicking "Not Now" button
         try:
             if layout == "old":
@@ -76,8 +76,9 @@ class Facebook_scraper:
                 Utilities._Utilities__close_error_popup(self.__driver)
                 Utilities._Utilities__close_popup(self.__driver)
             elif layout == "new":
-                Utilities._Utilities__close_modern_layout_signup_modal(
-                    self.__driver)
+                if close_regular_signup_modal:
+                    Utilities._Utilities__close_modern_layout_signup_modal(
+                        self.__driver)
                 Utilities._Utilities__close_cookie_consent_modern_layout(
                     self.__driver)
 
@@ -87,7 +88,7 @@ class Facebook_scraper:
     def __check_timeout(self, start_time, current_time):
         return (current_time-start_time) > self.timeout
 
-    def scrap_to_json(self, minimum_timestamp = None):
+    def scrap_to_json(self, minimum_timestamp = None, single_post = False):
         # call the __start_driver and override class member __driver to webdriver's instance
         self.__start_driver()
         starting_time = time.time()
@@ -105,11 +106,11 @@ class Facebook_scraper:
             self.__driver, self.__layout, self.timeout)
         # scroll down to bottom most
         Utilities._Utilities__scroll_down(self.__driver, self.__layout)
-        self.__handle_popup(self.__layout)
+        self.__handle_popup(self.__layout, close_regular_signup_modal=not single_post)
         # timestamp limitation for scraping posts
         timestamp_edge_hit = False
         while (not timestamp_edge_hit) and (len(self.__data_dict) < self.posts_count) and elements_have_loaded:
-            self.__handle_popup(self.__layout)
+            self.__handle_popup(self.__layout, close_regular_signup_modal=not single_post)
             # self.__find_elements(name)
             timestamp_edge_hit = self.__find_elements(minimum_timestamp)
             current_time = time.time()

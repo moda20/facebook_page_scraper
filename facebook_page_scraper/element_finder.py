@@ -85,8 +85,9 @@ class Finder:
                 driver.execute_script("arguments[0].scrollIntoView({ block: 'center', inline: 'center'});", post)
                 # try to hover over the time link
                 link = Utilities._Utilities__find_with_multiple_selectors(post, [
+                    'span > a[attributionsrc][role="link"][href*="/posts/"]',
+                    'span > a[attributionsrc][role="link"][href="#"]',
                     'span > a[role="link"]' if isGroup else 'span > a[target="_blank"][role="link"]',
-                    'span > a[attributionsrc][role="link"][href="#"]'
                 ])
                 actions = ActionChains(driver)
                 # scroll to the link
@@ -390,6 +391,14 @@ class Finder:
 
                     parent_element = link_element.find_element_by_xpath("..")
                     parent_element_described_by=parent_element.get_attribute("aria-describedby")
+
+                    #loop over the parent elements to find the id, in some cases the is is not on the parent but the grandparent element of the link
+                    retries = 0
+                    while parent_element_described_by is None and retries < 5:
+                        parent_element = parent_element.find_element_by_xpath("..")
+                        parent_element_described_by=parent_element.get_attribute("aria-describedby")
+                        retries += 1
+
                     tooltipElement = driver.find_element(By.CSS_SELECTOR, f"[id*={parent_element_described_by.replace(':', '').replace(':', '')}]")
                     timestampContent = tooltipElement.get_attribute("innerText")
                     logger.debug(f"tooltipElement content : {timestampContent}")
