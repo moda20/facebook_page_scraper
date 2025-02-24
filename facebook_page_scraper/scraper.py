@@ -112,7 +112,7 @@ class Facebook_scraper:
         while (not timestamp_edge_hit) and (len(self.__data_dict) < self.posts_count) and elements_have_loaded:
             self.__handle_popup(self.__layout, close_regular_signup_modal=not single_post)
             # self.__find_elements(name)
-            timestamp_edge_hit = self.__find_elements(minimum_timestamp)
+            timestamp_edge_hit = self.__find_elements(minimum_timestamp, single_post)
             current_time = time.time()
             if self.__check_timeout(starting_time, current_time) is True:
                 logger.setLevel(logging.INFO)
@@ -206,7 +206,7 @@ class Facebook_scraper:
             # if length of posts is 0,decrement retry by 1
             self.retry -= 1
 
-    def __find_elements(self, minimum_timestamp):
+    def __find_elements(self, minimum_timestamp, single_post = False):
         """find elements of posts and add them to data_dict"""
         all_posts = Finder._Finder__find_all_posts(
             self.__driver, self.__layout, self.isGroup)  # find all posts
@@ -332,7 +332,7 @@ class Facebook_scraper:
 
                     # extract time
                     posted_time = Finder._Finder__find_posted_time(
-                        post, self.__layout, link_element, self.__driver, self.isGroup)
+                        post, self.__layout, link_element, self.__driver, self.isGroup, single_post = single_post)
 
                     #getting post time and checking for minimum timestamp
                     if not self.isGroup:

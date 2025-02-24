@@ -335,7 +335,7 @@ class Finder:
         return content
 
     @staticmethod
-    def __find_posted_time(post, layout, link_element, driver, isGroup):
+    def __find_posted_time(post, layout, link_element, driver, isGroup, single_post = False):
         """finds posted time of the facebook post using selenium's webdriver's method"""
         try:
             # extract element that looks like <abbr class='_5ptz' data-utime="some unix timestamp"> </abbr>
@@ -388,6 +388,8 @@ class Finder:
                                             window.scrollTo(0, middle); 
                                         """
                     driver.execute_script(scrolling_script, link_element)
+                    if single_post:
+                        driver.execute_script("arguments[0].scrollIntoView();", link_element)
                     actions.move_to_element(link_element).perform()
 
                     parent_element = link_element.find_element_by_xpath("..")
