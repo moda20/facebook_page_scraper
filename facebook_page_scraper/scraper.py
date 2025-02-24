@@ -236,10 +236,11 @@ class Facebook_scraper:
                     continue
 
 
-                # Split the URL on the '?' character, to detach the referer or uneeded query info
-                parts = post_url.split('?')
-                # The first part of the list is the URL up to the '?'
-                post_url = parts[0]
+                if not ('permalink.php' in post_url):
+                    # Only when the link doesn't have permalink in it Split the URL on the '?' character, to detach the referer or uneeded query info
+                    parts = post_url.split('?')
+                    # The first part of the list is the URL up to the '?'
+                    post_url = parts[0]
 
 
                 # finds name depending on if this facebook site is a page or group (we pass a post obj or a webDriver)
@@ -353,7 +354,7 @@ class Facebook_scraper:
                     "user_url": name.get('url'),
                     "content": post_content,
                     "images": image.get('images'),
-                    "post_id": image.get('post_id'),
+                    "post_id": image.get('post_id') if image.get('post_id') else status,
                     "post_url": post_url,
                     "error": image.get('error'),
                     # NOTE only include the following fields if scraping a page, not tested for groups yet

@@ -86,6 +86,7 @@ class Finder:
                 # try to hover over the time link
                 link = Utilities._Utilities__find_with_multiple_selectors(post, [
                     'span > a[attributionsrc][role="link"][href*="/posts/"]',
+                    'span > a[attributionsrc][role="link"][href*="/permalink"]',
                     'span > a[attributionsrc][role="link"][href="#"]',
                     'span > a[role="link"]' if isGroup else 'span > a[target="_blank"][role="link"]',
                 ])
