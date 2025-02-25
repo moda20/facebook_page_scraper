@@ -63,7 +63,7 @@ class Finder:
         return status
 
     @staticmethod
-    def __find_status(post, layout, isGroup, driver, page_or_group_name):
+    def __find_status(post, layout, isGroup, driver, page_or_group_name, single_post = False):
         """finds URL of the post, then extracts link from that URL and returns it"""
         try:
             link = None
@@ -91,15 +91,18 @@ class Finder:
                     'span > a[role="link"]' if isGroup else 'span > a[target="_blank"][role="link"]',
                 ])
                 actions = ActionChains(driver)
-                # scroll to the link
-                scrolling_script = """
-                    const element = arguments[0];
-                    const elementRect = element.getBoundingClientRect();
-                    const absoluteElementTop = elementRect.top + window.pageYOffset;
-                    const middle = absoluteElementTop - (window.innerHeight / 2);
-                    window.scrollTo(0, middle); 
-                """
-                driver.execute_script(scrolling_script, link)
+                if single_post:
+                    driver.execute_script("arguments[0].scrollIntoView();", link)
+                else:
+                    # scroll to the link
+                    scrolling_script = """
+                        const element = arguments[0];
+                        const elementRect = element.getBoundingClientRect();
+                        const absoluteElementTop = elementRect.top + window.pageYOffset;
+                        const middle = absoluteElementTop - (window.innerHeight / 2);
+                        window.scrollTo(0, middle); 
+                    """
+                    driver.execute_script(scrolling_script, link)
                 Utilities._Utilities__close_force_login_popup(driver)
                 driver.execute_script("arguments[0].style.border='2px solid black'", link);
                 actions.move_to_element(link).perform()

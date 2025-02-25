@@ -230,7 +230,7 @@ class Facebook_scraper:
             try:
                 # find post ID from post
                 status, post_url, link_element = Finder._Finder__find_status(
-                    post, self.__layout, self.isGroup, self.__driver, self.page_or_group_name)
+                    post, self.__layout, self.isGroup, self.__driver, self.page_or_group_name, single_post = single_post)
                 if post_url is None:
                     print("no post_url, skipping")
                     continue
