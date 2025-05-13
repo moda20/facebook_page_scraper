@@ -19,10 +19,11 @@ logger.addHandler(ch)
 
 class Initializer:
 
-    def __init__(self, browser_name, proxy=None, headless=True):
+    def __init__(self, browser_name, proxy=None, headless=True, devTools=False):
         self.browser_name = browser_name
         self.proxy = proxy
         self.headless = headless
+        self.devTools = devTools
 
     def set_properties(self, browser_option):
         """adds capabilities to the driver"""
@@ -30,7 +31,7 @@ class Initializer:
             browser_option.add_argument(
                 '--headless')  # runs browser in headless mode
         else:
-            if self.browser_name.lower() == "firefox":
+            if self.devTools:
                 browser_option.add_argument("-devtools")
         browser_option.add_argument('--no-sandbox')
         browser_option.add_argument("--disable-dev-shm-usage")

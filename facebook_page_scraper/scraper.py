@@ -96,7 +96,7 @@ class Facebook_scraper:
         # navigate to URL
         self.__driver.get(self.URL)
         #set window size
-        self.__driver.set_window_size(4096, 2160)
+        self.__driver.set_window_size(1920, 1080)
         # only login if username is provided
         self.username is not None and Finder._Finder__login(self.__driver, self.username, self.password)
         Finder._Finder__accept_cookies(self.__driver)

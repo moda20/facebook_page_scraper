@@ -6,7 +6,7 @@ import time
 from random import randint
 
 from selenium.common.exceptions import (NoSuchElementException,
-                                        WebDriverException)
+                                        WebDriverException, StaleElementReferenceException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -52,15 +52,20 @@ class Utilities:
             # if any other error occured except the above one
             logger.exception(
                 "Error at close_error_popup method : {}".format(ex))
+
     @staticmethod
     def __close_force_login_popup(driver):
         '''expects driver's instance as a argument and checks if force login popup shows up
         without the close button present, it will then delete it from the DOM and proceed with the rest.'''
         try:
             logger.debug("will try to find the force login popup")
-            signup_form_cta = driver.find_element(By.CSS_SELECTOR, '#login_popup_cta_form')
+            signup_form_cta = Utilities.__find_with_multiple_selectors(driver, [
+                '#login_popup_cta_form',
+                'div[aria-label*="Login form for accessing your account"]'
+            ])
             logger.debug("signup_form_cta found, will look for the parent box")
-            popup_element = signup_form_cta.find_element(By.XPATH, './ancestor::div[contains(@class, "_fb-light-mode")]')
+            popup_element = signup_form_cta.find_element(By.XPATH,
+                                                         './ancestor::div[contains(@class, "_fb-light-mode")]')
             logger.debug("force login popup found, will proceed with deletion")
             driver.execute_script("arguments[0].parentNode.removeChild(arguments[0]);", popup_element)
             logger.info("force login popup deleted")
@@ -77,8 +82,6 @@ class Utilities:
             # if any other error occured except the above one
             logger.exception(
                 "Error at __close_force_login_popup method : {}".format(ex))
-
-
 
     @staticmethod
     def __scroll_down_half(driver):
@@ -119,7 +122,7 @@ class Utilities:
                 time.sleep(randint(5, 6))
                 for _ in range(randint(5, 8)):
                     body.send_keys(Keys.PAGE_DOWN)
-                #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                # driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 # Utilities.__close_modern_layout_signup_modal(driver)
         except Exception as ex:
             # if any error occured than close the driver and exit
@@ -208,13 +211,12 @@ class Utilities:
     def __close_cookie_consent_modern_layout(driver):
         # To avoid the cookie consent prompt
         try:
-          allow_span = driver.find_element(
-             By.XPATH, '//div[contains(@aria-label, "Allow")]/../following-sibling::div')
-          allow_span.click()
+            allow_span = driver.find_element(
+                By.XPATH, '//div[contains(@aria-label, "Allow")]/../following-sibling::div')
+            allow_span.click()
         except Exception as ex:
-            #if not found, that's fine silently just log thing do not stop
+            # if not found, that's fine silently just log thing do not stop
             logger.info('The Cookie Consent Prompt was not found!: ', ex)
-
 
     @staticmethod
     def __find_with_multiple_selectors(driver, selectors):
@@ -230,3 +232,11 @@ class Utilities:
                 logger.exception("Error at find_status method : {}".format(ex))
                 pass
         raise NoSuchElementException(f"No element found! for selectors: {selectors}")
+
+    @staticmethod
+    def __is_stale(element):
+        try:
+            _ = element.tag_name
+            return False
+        except StaleElementReferenceException:
+            return True

@@ -87,6 +87,7 @@ class Finder:
                 link = Utilities._Utilities__find_with_multiple_selectors(post, [
                     'span > a[attributionsrc][role="link"][href*="/posts/"]',
                     'span > a[attributionsrc][role="link"][href*="/permalink"]',
+                    'span > a[attributionsrc][role="link"][href*="/videos"]',
                     'span > a[attributionsrc][role="link"][href="#"]',
                     'span > a[role="link"]' if isGroup else 'span > a[target="_blank"][role="link"]',
                 ])
@@ -380,42 +381,72 @@ class Finder:
                     timestamp = driver.execute_script(js_script, link_element)
                     logger.debug("TIMESTAMP: " + str(timestamp))
                 elif not isGroup:
-                    # getting the timestamp from teh tooltip after hovering the link
-                    logger.debug("getting timestamp from hovering tooltip")
-                    actions = ActionChains(driver)
-                    scrolling_script = """
-                                            const element = arguments[0];
-                                            const elementRect = element.getBoundingClientRect();
-                                            const absoluteElementTop = elementRect.top + window.pageYOffset;
-                                            const middle = absoluteElementTop - (window.innerHeight / 2);
-                                            window.scrollTo(0, middle); 
-                                        """
-                    driver.execute_script(scrolling_script, link_element)
-                    if single_post:
-                        driver.execute_script("arguments[0].scrollIntoView();", link_element)
-                    actions.move_to_element(link_element).perform()
+                    try:
+                        # getting the timestamp from teh tooltip after hovering the link
+                        logger.debug("getting timestamp from hovering tooltip")
+                        actions = ActionChains(driver)
+                        is_link_stale = Utilities._Utilities__is_stale(link_element)
+                        print(f"link is stale {is_link_stale}")
+                        scrolling_script = """
+                            try {
+                                const element = arguments[0];
+                                console.log(element)
+                                const elementRect = element.getBoundingClientRect();
+                                const absoluteElementTop = elementRect.top + window.pageYOffset;
+                                const middle = absoluteElementTop - (window.innerHeight / 2);
+                                console.log(middle)
+                                window.scrollTo(0, middle);
+                                return true
+                            } catch(err) {
+                                return err.toString()
+                            } 
+                        """
 
-                    parent_element = link_element.find_element_by_xpath("..")
-                    parent_element_described_by=parent_element.get_attribute("aria-describedby")
+                        result = driver.execute_script(scrolling_script, link_element)
+                        logger.debug(f"scrolling script results {result}")
+                        # deciding if the link element is able to be hovered
+                        is_not_hidden = driver.execute_script("""
+                                var elem = arguments[0];
+                                var rect = elem.getBoundingClientRect();
+                                var centerX = rect.left + rect.width / 2;
+                                var centerY = rect.top + rect.height / 2;
+                                var topElem = document.elementFromPoint(centerX, centerY);
+                                return elem === topElem || elem.contains(topElem);
+                            """, link_element)
+                        if not is_not_hidden:
+                            driver.execute_script("arguments[0].scrollIntoView({block:'center',inline:'nearest'});", link_element)
+                        if single_post:
+                            driver.execute_script("arguments[0].scrollIntoView();", link_element)
+                        actions.move_to_element(link_element).pause(1).perform()
 
-                    #loop over the parent elements to find the id, in some cases the is is not on the parent but the grandparent element of the link
-                    retries = 0
-                    while parent_element_described_by is None and retries < 5:
-                        parent_element = parent_element.find_element_by_xpath("..")
-                        parent_element_described_by=parent_element.get_attribute("aria-describedby")
-                        retries += 1
+                        parent_element = link_element.find_element_by_xpath("..")
+                        parent_element_described_by = parent_element.get_attribute("aria-describedby")
 
-                    tooltipElement = driver.find_element(By.CSS_SELECTOR, f"[id*={parent_element_described_by.replace(':', '').replace(':', '')}]")
-                    timestampContent = tooltipElement.get_attribute("innerText")
-                    logger.debug(f"tooltipElement content : {timestampContent}")
-                    timestamp = (
-                        parse(timestampContent).isoformat()
-                        if len(timestampContent) > 5
-                        else Scraping_utilities._Scraping_utilities__convert_to_iso(
-                            timestampContent
+                        # loop over the parent elements to find the id, in some cases the is is not on the parent but the grandparent element of the link
+                        retries = 0
+                        if parent_element_described_by is not None:
+                            logger.debug(f"found parent_element_described_by from the start {parent_element_described_by}")
+                        while parent_element_described_by is None and retries < 5:
+                            parent_element = parent_element.find_element(By.XPATH, "..")
+                            parent_element_described_by = parent_element.get_attribute("aria-describedby")
+                            logger.debug(f"parent_element_described_by : {parent_element.get_attribute('outerHTML')} in retry {retries}")
+                            retries += 1
+
+                        tooltipElement = driver.find_element(By.CSS_SELECTOR,
+                                                             f"[id*={parent_element_described_by.replace(':', '').replace(':', '')}]")
+                        timestampContent = tooltipElement.get_attribute("innerText")
+                        logger.debug(f"tooltipElement content : {timestampContent}")
+                        timestamp = (
+                            parse(timestampContent).isoformat()
+                            if len(timestampContent) > 5
+                            else Scraping_utilities._Scraping_utilities__convert_to_iso(
+                                timestampContent
+                            )
                         )
-                    )
-                return timestamp
+                        return timestamp
+                    except Exception as ex:
+                        logger.exception("Error at find_posted_time method : {}".format(ex))
+                        raise ex
 
         except TypeError:
             timestamp = ""
