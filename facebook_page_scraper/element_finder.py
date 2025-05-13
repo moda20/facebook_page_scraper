@@ -536,9 +536,6 @@ class Finder:
                     By.CSS_SELECTOR, "div > img[referrerpolicy]"
                 )
 
-                # will open the fb carousel and get all the images
-                driver.set_window_size(1920, 1200)
-
                 photo_viewer_xpath = '//div[@aria-label="Photo Viewer"]'
 
                 # will try to close the carousel if it's open TODO be sure this does work

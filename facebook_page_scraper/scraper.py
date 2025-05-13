@@ -42,7 +42,7 @@ class Facebook_scraper:
     # if it returns true,it will break the loop. After coming out of loop,driver will be closed and it will return post whatever was found
 
     def __init__(self, page_or_group_name, posts_count=10, browser="chrome", proxy=None,
-                 timeout=600, headless=True, isGroup=False, username=None, password=None, driver_install_config=None):
+                 timeout=600, headless=True, isGroup=False, username=None, password=None, driver_install_config=None, remoteBrowser=None):
         self.page_or_group_name = page_or_group_name
         self.posts_count = int(posts_count)
         #self.URL = "https://en-gb.facebook.com/pg/{}/posts".format(self.page_or_group_name)
@@ -57,6 +57,7 @@ class Facebook_scraper:
         self.username = username
         self.password = password
         self.driver_install_config = driver_install_config
+        self.remoteBrowser = remoteBrowser
         self.__data_dict = {}  # this dictionary stores all post's data
         # __extracted_post contains all the post's ID that have been scraped before and as it set() it avoids post's ID duplication.
         self.__extracted_post = set()
@@ -66,7 +67,7 @@ class Facebook_scraper:
     def __start_driver(self):
         """changes the class member __driver value to driver on call"""
         self.__driver = Initializer(
-            self.browser, self.proxy, self.headless).init(self.driver_install_config)
+            self.browser, self.proxy, self.headless).init(self.driver_install_config, remoteBrowser=self.remoteBrowser)
 
     def __handle_popup(self, layout, close_regular_signup_modal = True):
         # while scrolling, wait for login popup to show, it can be skipped by clicking "Not Now" button
@@ -94,6 +95,8 @@ class Facebook_scraper:
         starting_time = time.time()
         # navigate to URL
         self.__driver.get(self.URL)
+        #set window size
+        self.__driver.set_window_size(4096, 2160)
         # only login if username is provided
         self.username is not None and Finder._Finder__login(self.__driver, self.username, self.password)
         Finder._Finder__accept_cookies(self.__driver)
