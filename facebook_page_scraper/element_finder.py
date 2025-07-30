@@ -724,7 +724,7 @@ class Finder:
             if layout == "old":
                 name = driverOrPost.find_element(By.CSS_SELECTOR, "a._64-f")
             elif layout == "new":
-                name = driverOrPost.find_element(By.TAG_NAME, "strong")
+                name = driverOrPost.find_element(By.TAG_NAME, "b.html-b")
             url = None
             if name is not None:
                 try:
