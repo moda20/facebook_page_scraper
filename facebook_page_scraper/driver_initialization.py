@@ -91,4 +91,5 @@ class Initializer:
     def init(self, driver_install_config, remoteBrowser=None):
         """returns driver instance"""
         driver = self.set_driver_for_browser(self.browser_name, driver_install_config=driver_install_config, remoteBrowser=remoteBrowser)
+        driver.set_page_load_timeout(120)
         return driver
