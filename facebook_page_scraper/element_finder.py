@@ -88,6 +88,7 @@ class Finder:
                     'span > a[attributionsrc][role="link"][href*="/posts/"]',
                     'span > a[attributionsrc][role="link"][href*="/permalink"]',
                     'span > a[attributionsrc][role="link"][href*="/videos"]',
+                    'span > a[attributionsrc][role="link"][href*="/reel"]',
                     'span > a[attributionsrc][role="link"][href="#"]',
                     'span > a[role="link"]' if isGroup else 'span > a[target="_blank"][role="link"]',
                 ])
@@ -228,13 +229,19 @@ class Finder:
                     comments
                 )
             elif layout == "new":
-                element = post.find_element(
+                # will find multiple elements based on the selector, i estimate that there is only one element
+                # with a number in the text, and we will use that as the comment number
+                elements = post.find_elements(
                     By.CSS_SELECTOR, 'div:nth-child(1) > span > div > div > div:nth-child(1) > span'
                 )
                 comments = 0
-                if element is None:
-                    return comments
-                return element.text
+                for element in elements:
+                    text = element.text
+                    if text.isdigit():
+                        return text
+                    else:
+                        continue
+                return comments
         except NoSuchElementException:
             comments = 0
         except Exception as ex:
