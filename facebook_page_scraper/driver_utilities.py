@@ -6,7 +6,7 @@ import time
 from random import randint
 
 from selenium.common.exceptions import (NoSuchElementException,
-                                        WebDriverException, StaleElementReferenceException)
+                                        WebDriverException, StaleElementReferenceException, InvalidSessionIdException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -28,6 +28,8 @@ class Utilities:
         try:
             driver.close()
             driver.quit()
+        except InvalidSessionIdException as ise:
+            logger.info("Browser is probably closed, og message : {}".format(ise))
         except Exception as ex:
             logger.exception("Error at close_driver method : {}".format(ex))
 
