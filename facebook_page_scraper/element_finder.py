@@ -572,7 +572,7 @@ class Finder:
                 # extract src attribute from all the img tag,store it in list
             elif layout == "new":
                 images = post.find_elements(
-                    By.CSS_SELECTOR, "div > img[referrerpolicy]"
+                    By.CSS_SELECTOR, "a[href*='/photo'] div > img[referrerpolicy]"
                 )
 
                 photo_viewer_xpath = '//div[@aria-label="Photo Viewer"]'
@@ -592,7 +592,7 @@ class Finder:
                     parent_element = images[-1].find_element(By.XPATH,
                                                                './ancestor::a[contains(@href, "/photo")]')
                     last_image_count = parent_element.find_element(By.XPATH,
-                                                               "..//div[contains(text(), '+')]")
+                                                               "..//div[contains(., '+')]")
                     max_images_count = len(images) + int(last_image_count.text.strip("+"))
                     logger.debug(f"image count is {max_images_count}")
                 except Exception as exce:
