@@ -464,12 +464,12 @@ class Finder:
             return timestamp
 
     @staticmethod
-    def __find_video_url(post):
+    def __find_video_url(post,  driver=None):
         """finds video of the facebook post using selenium's webdriver's method"""
+        srcs = []
         try:
             # if video is found in the post, than create a video URL by concatenating post's id with page_name
             video_element = post.find_elements(By.TAG_NAME, "video")
-            srcs = []
             for video in video_element:
                 srcs.append(video.get_attribute("src"))
         except NoSuchElementException:
@@ -479,6 +479,14 @@ class Finder:
             video = []
             logger.exception("Error at find_video_url method : {}".format(ex))
 
+        reel = Utilities._Utilities__find_with_multiple_selectors(post, [
+            'a[attributionsrc][role="link"][href*="/reel"]'
+        ],
+        return_null_if_not_found = True)
+
+        if reel is not None:
+            print("reel found : {}", reel.get_attribute("href"))
+            srcs.append(reel.get_attribute("href"))
         return srcs
 
     @staticmethod

@@ -221,7 +221,7 @@ class Utilities:
             logger.info('The Cookie Consent Prompt was not found!: ', ex)
 
     @staticmethod
-    def __find_with_multiple_selectors(driver, selectors):
+    def __find_with_multiple_selectors(driver, selectors, return_null_if_not_found = False):
         for selector in selectors:
             try:
                 return driver.find_element(
@@ -233,6 +233,8 @@ class Utilities:
             except Exception as ex:
                 logger.exception("Error at find_status method : {}".format(ex))
                 pass
+        if return_null_if_not_found:
+            return None
         raise NoSuchElementException(f"No element found! for selectors: {selectors}")
 
     @staticmethod
