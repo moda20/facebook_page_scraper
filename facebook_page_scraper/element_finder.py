@@ -486,8 +486,12 @@ class Finder:
         return_null_if_not_found = True)
 
         if videos is not None:
-            for video in videos:
-                print("video found : {}", video.get_attribute("href"))
+            unique_video_links = list({
+                urlparse(u.get_attribute("href")).path.rsplit('/', 1)[-1]: u
+                for u in videos
+            }.values())
+            for video in unique_video_links:
+                logger.debug("video found : {}", video.get_attribute("href"))
                 srcs.append(video.get_attribute("href"))
 
         return srcs
