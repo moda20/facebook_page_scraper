@@ -479,14 +479,17 @@ class Finder:
             video = []
             logger.exception("Error at find_video_url method : {}".format(ex))
 
-        reel = Utilities._Utilities__find_with_multiple_selectors(post, [
-            'a[attributionsrc][role="link"][href*="/reel"]'
+        videos = Utilities._Utilities__find_elements_with_multiple_selectors(post, [
+            'a[attributionsrc][role="link"][href*="/reel"]',
+            'a[attributionsrc][role="link"][href*="/videos"]'
         ],
         return_null_if_not_found = True)
 
-        if reel is not None:
-            print("reel found : {}", reel.get_attribute("href"))
-            srcs.append(reel.get_attribute("href"))
+        if videos is not None:
+            for video in videos:
+                print("video found : {}", video.get_attribute("href"))
+                srcs.append(video.get_attribute("href"))
+
         return srcs
 
     @staticmethod

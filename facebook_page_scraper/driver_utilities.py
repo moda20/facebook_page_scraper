@@ -238,6 +238,28 @@ class Utilities:
         raise NoSuchElementException(f"No element found! for selectors: {selectors}")
 
     @staticmethod
+    def __find_elements_with_multiple_selectors(driver, selectors, return_null_if_not_found = False):
+        elements = []
+        for selector in selectors:
+            try:
+                elems = driver.find_elements(
+                    By.CSS_SELECTOR,
+                    selector
+                )
+                elements.extend(elems)
+            except NoSuchElementException:
+                pass
+            except Exception as ex:
+                logger.exception("Error at find_status method : {}".format(ex))
+                pass
+        if len(elements) > 0 :
+            return elements
+        if len(elements) == 0 and return_null_if_not_found:
+            return None
+
+        raise NoSuchElementException(f"No element found! for selectors: {selectors}")
+
+    @staticmethod
     def __is_stale(element):
         try:
             _ = element.tag_name
