@@ -92,6 +92,10 @@ class Finder:
                     'span > a[attributionsrc][role="link"][href*="/reel"]',
                     'span > a[attributionsrc][role="link"][href="#"]',
                     'span > a[role="link"]' if isGroup else 'span > a[target="_blank"][role="link"]',
+                    'span > a[role="link"][href*="/reel"]',
+                    'span > a[role="link"][href*="/posts/"]',
+                    'span > a[role="link"][href*="/permalink"]',
+                    'span > a[role="link"][href*="/videos"]',
                 ])
                 actions = ActionChains(driver)
                 if single_post:
@@ -481,7 +485,9 @@ class Finder:
 
         videos = Utilities._Utilities__find_elements_with_multiple_selectors(post, [
             'a[attributionsrc][role="link"][href*="/reel"]',
-            'a[attributionsrc][role="link"][href*="/videos"]'
+            'a[attributionsrc][role="link"][href*="/videos"]',
+            'a[role="link"][href*="/reel"]',
+            'a[role="link"][href*="/videos"]'
         ],
         return_null_if_not_found = True)
 
@@ -613,6 +619,11 @@ class Finder:
                 except Exception as exce:
                     max_images_count = len(images)
                     logger.debug(exce)
+                if len(images) == 0:
+                    return {
+                        'images': [],
+                        'post_id': post_id
+                    }
                 first_url_element = images[0].find_element_by_xpath('./ancestor::a')
 
                 if '/photo' not in first_url_element.get_attribute('href'):
