@@ -357,7 +357,7 @@ class Facebook_scraper:
                     "user_url": name.get('url'),
                     "content": post_content,
                     "images": image.get('images'),
-                    "post_id": image.get('post_id') if image.get('post_id') else status,
+                    "post_id": status if status else image.get('post_id', None),
                     "post_url": post_url,
                     "error": image.get('error'),
                     # NOTE only include the following fields if scraping a page, not tested for groups yet

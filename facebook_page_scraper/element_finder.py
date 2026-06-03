@@ -124,18 +124,24 @@ class Finder:
                     arguments[0].dispatchEvent(evObj);
                 """
                 driver.execute_script(javaScript, link)
-                try:
-                    link = post.find_element(
-                        By.CSS_SELECTOR,
-                        'span > a[role="link"]' if isGroup else 'span > a[href*="/posts/"][role="link"]'
-                    )
-                except NoSuchElementException:
-                    postId = Finder._Finder__find_post_id(post, layout)
-                    if postId is not None:
-                        post_url = "https://www.facebook.com/{}/posts/{}".format(page_or_group_name, postId)
-                        print("constructed post Url ")
-                        print(post_url)
-                        return (postId, post_url, link)
+                # DEPRECATED
+                # This block will probably never run, if the link is not found an exception will be thrown and the code
+                # won't get to run this
+                if not link:
+                    try:
+                        logger.debug("Will try to find the link again and construct a link")
+                        logger.debug("Constructed links are not always viable and may point to a complete different post")
+                        link = post.find_element(
+                            By.CSS_SELECTOR,
+                            'span > a[role="link"]' if isGroup else 'span > a[href*="/posts/"][role="link"]'
+                        )
+                    except NoSuchElementException:
+                        postId = Finder._Finder__find_post_id(post, layout)
+                        if postId is not None:
+                            post_url = "https://www.facebook.com/{}/posts/{}".format(page_or_group_name, postId)
+                            print("constructed post URLs are not always viable and probably mean the post structure is not accounted for, here is the one created:")
+                            print(post_url)
+                            return (postId, post_url, link)
 
                 Utilities._Utilities__close_force_login_popup(driver)
                 if link is not None:
