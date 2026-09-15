@@ -79,6 +79,8 @@ class Scraping_utilities:
                 status = link.split("=")[1].split("&")[0]
             elif "group" in link:
                 status = link.split("/")[6]
+            elif "reel" in link:
+                status = link.split("/")[4]
             return status
         except IndexError:
             pass
